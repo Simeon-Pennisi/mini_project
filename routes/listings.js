@@ -16,15 +16,26 @@ const listings = [
   },
 ];
 
-router.get("/", (req, res) => {
-  res.status(200).json([...listings]);
+router.get("/", async (req, res) => {
+  try {
+    console.log("listings:", listings);
+    res.status(200).json([...listings]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
 });
 
-router.post("/", (req, res) => {
-  const created = listings.push({ ...req.body, id: Date.now() });
-  //   const created = [...listings, { ...req.body, id: Date.now() }];
-  console.log("created listing:", created);
-  res.status(201).send(created);
+router.post("/", async (req, res) => {
+  try {
+    const created = { ...req.body, id: Date.now() };
+    listings.push(created);
+    console.log("created listing:", created);
+    res.status(201).send(created);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
 });
 
 export default router;
