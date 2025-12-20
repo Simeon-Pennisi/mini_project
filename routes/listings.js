@@ -16,25 +16,23 @@ const listings = [
   },
 ];
 
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
     console.log("listings:", listings);
     res.status(200).json([...listings]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Server error");
+  } catch (err) {
+    next(err);
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const created = { ...req.body, id: Date.now() };
     listings.push(created);
     console.log("created listing:", created);
     res.status(201).send(created);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Server error");
+  } catch (err) {
+    next(err);
   }
 });
 
