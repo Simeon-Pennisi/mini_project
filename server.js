@@ -21,7 +21,12 @@ app.use("/api/listings", router);
 const PORT = process.env.PORT || 3001;
 
 app.use((err, req, res, next) => {
-  res.status(500).json({ error: "Internal Server Error" });
+  // If error comes from JSON parsing (entity.parse.failed) → 400
+  if (err.type === "entity.parse.failed") {
+    res.status(400).json({ error: "Invalid JSON payload" });
+  } else {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
   console.log(err);
 });
 
