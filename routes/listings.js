@@ -68,6 +68,18 @@ function requireOwner(req, res, next) {
     next();
   }
 }
+// validate req.body
+function validateListingBody(req, res, next) {
+  const { title, price } = req.body;
+
+  if (typeof title !== "string" || title.trim() === "") {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+  if (typeof price !== "number" || Number.isNaN(price)) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+  next();
+}
 
 // routes
 router.get("/", async (req, res, next) => {
@@ -79,14 +91,15 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", requireUser, async (req, res, next) => {
+router.post("/", requireUser, validateListingBody, async (req, res, next) => {
   try {
     const { title, price, condition } = req.body;
     const created = { ...req.body, id: Date.now(), ownerId: req.userId };
     if (
-      !created.title ||
-      created.price == null ||
-      typeof created.price !== "number"
+      // !created.title ||
+      // created.price == null ||
+      // typeof created.price !== "number"
+      !validateListingBody(req, res, next)
     ) {
       return res.status(400).json({ error: "Invalid input" });
     } else {
@@ -104,6 +117,7 @@ router.put(
   parseIdParam, // Assuming parseIdParam middleware is defined elsewhere
   loadListing, // Assuming loadListing middleware is defined elsewhere
   requireOwner, // Assuming requireOwner middleware is defined elsewhere
+  validateListingBody,
   async (req, res, next) => {
     try {
       const { title, price, condition } = req.body;
