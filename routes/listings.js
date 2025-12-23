@@ -95,12 +95,7 @@ router.post("/", requireUser, validateListingBody, async (req, res, next) => {
   try {
     const { title, price, condition } = req.body;
     const created = { ...req.body, id: Date.now(), ownerId: req.userId };
-    if (
-      // !created.title ||
-      // created.price == null ||
-      // typeof created.price !== "number"
-      !validateListingBody(req, res, next)
-    ) {
+    if (!validateListingBody(req, res, next)) {
       return res.status(400).json({ error: "Invalid input" });
     } else {
       listings.push(created);
