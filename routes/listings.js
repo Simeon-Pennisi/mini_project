@@ -94,13 +94,17 @@ router.get("/", async (req, res, next) => {
 router.post("/", requireUser, validateListingBody, async (req, res, next) => {
   try {
     const { title, price, condition } = req.body;
-    const created = { ...req.body, id: Date.now(), ownerId: req.userId };
-    if (!validateListingBody(req, res, next)) {
-      return res.status(400).json({ error: "Invalid input" });
-    } else {
-      listings.push(created);
-      return res.status(201).json(created);
-    }
+
+    const created = {
+      id: Date.now(),
+      title,
+      price,
+      condition,
+      ownerId: req.userId,
+    };
+
+    listings.push(created);
+    return res.status(201).json(created);
   } catch (err) {
     next(err);
   }
@@ -108,20 +112,22 @@ router.post("/", requireUser, validateListingBody, async (req, res, next) => {
 
 router.put(
   "/:id",
-  requireUser, // Assuming requireUser middleware is defined elsewhere
-  parseIdParam, // Assuming parseIdParam middleware is defined elsewhere
-  loadListing, // Assuming loadListing middleware is defined elsewhere
-  requireOwner, // Assuming requireOwner middleware is defined elsewhere
+  requireUser,
+  parseIdParam,
+  loadListing,
+  requireOwner,
   validateListingBody,
   async (req, res, next) => {
     try {
       const { title, price, condition } = req.body;
+
       const updatedListing = {
         ...req.listing,
         title,
         price,
         condition: condition ?? req.listing.condition,
       };
+
       listings[req.listingIndex] = updatedListing;
 
       return res.status(200).json(updatedListing);
