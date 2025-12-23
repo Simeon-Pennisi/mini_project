@@ -26,7 +26,50 @@ const listings = [
   },
 ];
 
-// return all listings for all users
+// functions for middleware
+// set req.userId
+function requireUser(req, res, next) {
+  const userId = req.header("X-User-Id"); // Assuming X-User-Id is a header for user ID
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  } else {
+    req.userId = userId;
+    next();
+  }
+}
+// set req.listingId
+function parseIdParam(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
+  req.listingId = id;
+  next();
+}
+// set req.listing + req.listingIndex
+function loadListing(req, res, next) {
+  const id = req.listingId;
+  const listingIndex = listings.findIndex((l) => l.id === id);
+  if (listingIndex === -1) {
+    return res.status(404).json({ error: "Listing not found" });
+  } else {
+    req.listing = listings[listingIndex];
+    req.listingIndex = listingIndex;
+    next();
+  }
+}
+// compare req.userId vs req.listing.ownerId
+function requireOwner(req, res, next) {
+  const userId = req.userId;
+  const listing = req.listing;
+  if (userId !== listing.ownerId) {
+    return res.status(403).json({ error: "Forbidden" });
+  } else {
+    next();
+  }
+}
+
+// routes
 router.get("/", async (req, res, next) => {
   try {
     console.log("listings:", listings);
@@ -36,17 +79,110 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+// router.post("/", async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+//     const { title, price, condition } = req.body;
+//     const userId = req.header("X-User-Id"); // Assuming X-User-Id is a header for user ID
+//     const created = { ...req.body, id: Date.now(), ownerId: userId };
+//     // listings.push(created);
+//     console.log("created listing:", created);
+//     if (!userId) {
+//       return res.status(401).json({ error: "Unauthorized" });
+//     } else if (
+//       !created.title ||
+//       created.price == null ||
+//       typeof created.price !== "number"
+//     ) {
+//       return res.status(400).json({ error: "Invalid input" });
+//     } else {
+//       listings.push(created);
+//       return res.status(201).json(created);
+//     }
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+// router.put("/:id", async (req, res, next) => {
+//   try {
+//     const userId = req.header("X-User-Id");
+//     if (!userId) {
+//       return res.status(401).json({ error: "Unauthorized" });
+// }
+
+// const id = Number(req.params.id);
+// if (!Number.isInteger(id)) {
+//   return res.status(400).json({ error: "Invalid id" });
+// }
+
+// const listingIndex = listings.findIndex((l) => l.id === id);
+// if (listingIndex === -1) {
+//   return res.status(404).json({ error: "Listing not found" });
+// }
+
+// const listing = listings[listingIndex];
+
+// if (userId !== listing.ownerId) {
+//   return res.status(403).json({ error: "Forbidden" });
+// }
+
+// const { title, price, condition } = req.body;
+
+// if (typeof title !== "string" || title.trim() === "") {
+//       return res.status(400).json({ error: "Invalid input" });
+//     }
+//     if (typeof price !== "number" || Number.isNaN(price)) {
+//       return res.status(400).json({ error: "Invalid input" });
+//     }
+//     if (typeof condition !== "string" || condition.trim() === "") {
+//       return res.status(400).json({ error: "Invalid input" });
+//     }
+
+//     const updatedListing = { ...listing, title, price, condition };
+//     listings[listingIndex] = updatedListing;
+
+//     return res.status(200).json(updatedListing);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+// router.delete("/:id", async (req, res, next) => {
+//   try {
+//     const userId = req.header("X-User-Id");
+//     if (!userId) {
+//       return res.status(401).json({ error: "Unauthorized" });
+//     }
+
+//     const id = Number(req.params.id);
+//     if (!Number.isInteger(id)) {
+//       return res.status(400).json({ error: "Invalid id" });
+//     }
+
+//     const listingIndex = listings.findIndex((l) => l.id === id);
+//     if (listingIndex === -1) {
+//       return res.status(404).json({ error: "Listing not found" });
+//     }
+
+//     const listing = listings[listingIndex];
+
+//     if (userId !== listing.ownerId) {
+//       return res.status(403).json({ error: "Forbidden" });
+//     }
+
+//     listings.splice(listingIndex, 1);
+//     return res.status(204).send();
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+router.post("/", requireUser, async (req, res, next) => {
   try {
-    const { id } = req.params;
     const { title, price, condition } = req.body;
-    const userId = req.header("X-User-Id"); // Assuming X-User-Id is a header for user ID
-    const created = { ...req.body, id: Date.now(), ownerId: userId };
-    // listings.push(created);
-    console.log("created listing:", created);
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    } else if (
+    const created = { ...req.body, id: Date.now(), ownerId: req.userId };
+    if (
       !created.title ||
       created.price == null ||
       typeof created.price !== "number"
@@ -61,78 +197,40 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.put("/:id", async (req, res, next) => {
-  try {
-    const userId = req.header("X-User-Id");
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+router.put(
+  "/:id",
+  requireUser, // Assuming requireUser middleware is defined elsewhere
+  parseIdParam, // Assuming parseIdParam middleware is defined elsewhere
+  loadListing, // Assuming loadListing middleware is defined elsewhere
+  requireOwner, // Assuming requireOwner middleware is defined elsewhere
+  async (req, res, next) => {
+    try {
+      const { title, price, condition } = req.body;
+      const updatedListing = { ...req.listing, title, price, condition };
+      listings[req.listingIndex] = updatedListing;
+
+      return res.status(200).json(updatedListing);
+    } catch (err) {
+      next(err);
     }
-
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id)) {
-      return res.status(400).json({ error: "Invalid id" });
-    }
-
-    const listingIndex = listings.findIndex((l) => l.id === id);
-    if (listingIndex === -1) {
-      return res.status(404).json({ error: "Listing not found" });
-    }
-
-    const listing = listings[listingIndex];
-
-    if (userId !== listing.ownerId) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    const { title, price, condition } = req.body;
-
-    if (typeof title !== "string" || title.trim() === "") {
-      return res.status(400).json({ error: "Invalid input" });
-    }
-    if (typeof price !== "number" || Number.isNaN(price)) {
-      return res.status(400).json({ error: "Invalid input" });
-    }
-    if (typeof condition !== "string" || condition.trim() === "") {
-      return res.status(400).json({ error: "Invalid input" });
-    }
-
-    const updatedListing = { ...listing, title, price, condition };
-    listings[listingIndex] = updatedListing;
-
-    return res.status(200).json(updatedListing);
-  } catch (err) {
-    next(err);
   }
-});
+);
 
-router.delete("/:id", async (req, res, next) => {
-  try {
-    const userId = req.header("X-User-Id");
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
+router.delete(
+  "/:id",
+  requireUser,
+  parseIdParam,
+  loadListing,
+  requireOwner,
+  async (req, res, next) => {
+    try {
+      const { listingIndex } = req; // Assuming req.listingIndex is set by loadListing middleware
+      listings.splice(listingIndex, 1);
+      return res.status(204).send();
+    } catch (err) {
+      next(err);
     }
-
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id)) {
-      return res.status(400).json({ error: "Invalid id" });
-    }
-
-    const listingIndex = listings.findIndex((l) => l.id === id);
-    if (listingIndex === -1) {
-      return res.status(404).json({ error: "Listing not found" });
-    }
-
-    const listing = listings[listingIndex];
-
-    if (userId !== listing.ownerId) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
-
-    listings.splice(listingIndex, 1);
-    return res.status(204).send();
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 export default router;
