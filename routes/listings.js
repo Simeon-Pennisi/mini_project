@@ -121,7 +121,12 @@ router.put(
   async (req, res, next) => {
     try {
       const { title, price, condition } = req.body;
-      const updatedListing = { ...req.listing, title, price, condition };
+      const updatedListing = {
+        ...req.listing,
+        title,
+        price,
+        condition: condition ?? req.listing.condition,
+      };
       listings[req.listingIndex] = updatedListing;
 
       return res.status(200).json(updatedListing);
