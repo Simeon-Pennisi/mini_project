@@ -37,6 +37,7 @@ function requireUser(req, res, next) {
     next();
   }
 }
+
 // set req.listingId
 function parseIdParam(req, res, next) {
   const id = Number(req.params.id);
@@ -68,6 +69,7 @@ function requireOwner(req, res, next) {
     next();
   }
 }
+
 // validate req.body
 function validateListingBody(req, res, next) {
   const { title, price } = req.body;

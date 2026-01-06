@@ -1,8 +1,11 @@
 import express from "express";
 import router from "./routes/listings.js";
+import "dotenv/config";
 
 const app = express();
 app.use(express.json());
+
+// console.log("DB URL:", process.env.DATABASE_URL);
 
 // production logging middleware
 app.use((req, res, next) => {
