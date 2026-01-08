@@ -147,7 +147,8 @@ router.delete(
   requireOwner,
   async (req, res, next) => {
     try {
-      const { listingIndex } = req; // Assuming req.listingIndex is set by loadListing middleware
+      const { listingIndex } = req;
+      // Assuming req.listingIndex is set by loadListing middleware
       listings.splice(listingIndex, 1);
       return res.status(204).send();
     } catch (err) {
