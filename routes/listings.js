@@ -1,4 +1,5 @@
 import express from "express";
+
 const router = express.Router();
 const listings = [
   // the following are mock data
@@ -102,11 +103,18 @@ router.post("/", requireUser, validateListingBody, async (req, res, next) => {
       title,
       price,
       condition,
-      ownerId: req.userId,
+      // ownerId: req.userId,
+      ownerId: req.user.sub,
     };
 
     listings.push(created);
-    return res.status(201).json(created);
+    // compare req.user.sub to listing.ownerId
+    if (created.ownerId !== req.user.sub) {
+      return res.status(403).json({ error: "Forbidden" });
+    } else {
+      listings.push(created);
+      return res.status(201).json(created);
+    }
   } catch (err) {
     next(err);
   }
@@ -150,7 +158,13 @@ router.delete(
       const { listingIndex } = req;
       // Assuming req.listingIndex is set by loadListing middleware
       listings.splice(listingIndex, 1);
-      return res.status(204).send();
+      // compare req.user.sub to listing.ownerId
+      if (created.ownerId !== req.user.sub) {
+        return res.status(403).json({ error: "Forbidden" });
+      } else {
+        listings.splice(listingIndex, 1);
+        return res.status(204).send();
+      }
     } catch (err) {
       next(err);
     }
