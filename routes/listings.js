@@ -1,4 +1,5 @@
 import express from "express";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 const listings = [
@@ -8,14 +9,14 @@ const listings = [
     title: "Used MacBook Pro",
     price: 1200,
     condition: "Good",
-    ownerId: "user-1",
+    ownerId: "1",
   },
   {
     id: 2,
     title: "Mechanical Keyboard",
     price: 150,
     condition: "Like New",
-    ownerId: "user-1",
+    ownerId: "1",
   },
   {
     // test case for listing with different user id
@@ -23,21 +24,21 @@ const listings = [
     title: "Power Bank",
     price: 15,
     condition: "Poor",
-    ownerId: "user-2",
+    ownerId: "2",
   },
 ];
 
 // functions for middleware
 // set req.userId
-function requireUser(req, res, next) {
-  const userId = req.header("X-User-Id"); // Assuming X-User-Id is a header for user ID
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  } else {
-    req.userId = userId;
-    next();
-  }
-}
+// function requireAuth(req, res, next) {
+//   const userId = req.header("X-User-Id"); // Assuming X-User-Id is a header for user ID
+//   if (!userId) {
+//     return res.status(401).json({ error: "Unauthorized" });
+//   } else {
+//     req.userId = userId;
+//     next();
+//   }
+// }
 
 // set req.listingId
 function parseIdParam(req, res, next) {
@@ -60,9 +61,11 @@ function loadListing(req, res, next) {
     next();
   }
 }
+
 // compare req.userId vs req.listing.ownerId
 function requireOwner(req, res, next) {
-  const userId = req.userId;
+  // const userId = req.userId;
+  const userId = req.user.sub;
   const listing = req.listing;
   if (userId !== listing.ownerId) {
     return res.status(403).json({ error: "Forbidden" });
@@ -94,7 +97,7 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", requireUser, validateListingBody, async (req, res, next) => {
+router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
   try {
     const { title, price, condition } = req.body;
 
@@ -108,13 +111,15 @@ router.post("/", requireUser, validateListingBody, async (req, res, next) => {
     };
 
     listings.push(created);
+    return res.status(201).json(created);
+
     // compare req.user.sub to listing.ownerId
-    if (created.ownerId !== req.user.sub) {
-      return res.status(403).json({ error: "Forbidden" });
-    } else {
-      listings.push(created);
-      return res.status(201).json(created);
-    }
+    // if (created.ownerId !== req.user.sub) {
+    //   return res.status(403).json({ error: "Forbidden" });
+    // } else {
+    //   listings.push(created);
+    //   return res.status(201).json(created);
+    // }
   } catch (err) {
     next(err);
   }
@@ -122,7 +127,7 @@ router.post("/", requireUser, validateListingBody, async (req, res, next) => {
 
 router.put(
   "/:id",
-  requireUser,
+  requireAuth,
   parseIdParam,
   loadListing,
   requireOwner,
@@ -149,22 +154,14 @@ router.put(
 
 router.delete(
   "/:id",
-  requireUser,
+  requireAuth,
   parseIdParam,
   loadListing,
   requireOwner,
   async (req, res, next) => {
     try {
-      const { listingIndex } = req;
-      // Assuming req.listingIndex is set by loadListing middleware
-      listings.splice(listingIndex, 1);
-      // compare req.user.sub to listing.ownerId
-      if (created.ownerId !== req.user.sub) {
-        return res.status(403).json({ error: "Forbidden" });
-      } else {
-        listings.splice(listingIndex, 1);
-        return res.status(204).send();
-      }
+      listings.splice(req.listingIndex, 1);
+      return res.status(204).send();
     } catch (err) {
       next(err);
     }

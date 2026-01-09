@@ -2,7 +2,9 @@ import jwt from "jsonwebtoken";
 
 export function requireAuth(req, res, next) {
   const header = req.header("Authorization") || "";
+  console.log("AUTH HEADER:", header); // TEMP
   const [scheme, token] = header.split(" ");
+  console.log("AUTH SCHEME:", scheme, "TOKEN PRESENT:", Boolean(token)); // TEMP
 
   if (scheme !== "Bearer" || !token) {
     return res.status(401).json({ error: "Unauthorized" });
