@@ -30,27 +30,6 @@ app.use((req, res, next) => {
 
 app.use("/api/listings", router);
 
-// DB check endpoint (for testing purposes)
-// app.get("/api/dbcheck", async (req, res, next) => {
-//   try {
-//     const result = await query("SELECT NOW() as now");
-//     res.json(result.rows[0]);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
-// app.get("/api/dbinfo", async (req, res, next) => {
-//   try {
-//     const r = await query(
-//       "SELECT current_database() AS db, current_user AS user"
-//     );
-//     res.json(r.rows[0]);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   // If error comes from JSON parsing (entity.parse.failed) → 400

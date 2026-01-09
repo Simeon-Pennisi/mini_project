@@ -28,18 +28,6 @@ const listings = [
   },
 ];
 
-// functions for middleware
-// set req.userId
-// function requireAuth(req, res, next) {
-//   const userId = req.header("X-User-Id"); // Assuming X-User-Id is a header for user ID
-//   if (!userId) {
-//     return res.status(401).json({ error: "Unauthorized" });
-//   } else {
-//     req.userId = userId;
-//     next();
-//   }
-// }
-
 // set req.listingId
 function parseIdParam(req, res, next) {
   const id = Number(req.params.id);
@@ -64,7 +52,6 @@ function loadListing(req, res, next) {
 
 // compare req.userId vs req.listing.ownerId
 function requireOwner(req, res, next) {
-  // const userId = req.userId;
   const userId = req.user.sub;
   const listing = req.listing;
   if (userId !== listing.ownerId) {
@@ -106,20 +93,11 @@ router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
       title,
       price,
       condition,
-      // ownerId: req.userId,
       ownerId: req.user.sub,
     };
 
     listings.push(created);
     return res.status(201).json(created);
-
-    // compare req.user.sub to listing.ownerId
-    // if (created.ownerId !== req.user.sub) {
-    //   return res.status(403).json({ error: "Forbidden" });
-    // } else {
-    //   listings.push(created);
-    //   return res.status(201).json(created);
-    // }
   } catch (err) {
     next(err);
   }

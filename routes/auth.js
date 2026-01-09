@@ -87,10 +87,6 @@ router.post("/login", async (req, res, next) => {
       return res.status(500).json({ error: "Server misconfigured" });
     }
 
-    // Generate JWT
-    // const token = jwt.sign({ sub: user.id }, process.env.JWT_SECRET, {
-    //   expiresIn: process.env.JWT_EXPIRES_IN,
-    // });
     const token = jwt.sign(
       { sub: String(user.id), email: user.email },
       secret,
