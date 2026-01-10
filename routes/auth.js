@@ -66,7 +66,7 @@ router.post("/login", async (req, res, next) => {
 
     // Fetch user
     const result = await query(
-      `SELECT id, email, password_hash FROM users WHERE email = $1`,
+      `SELECT id, email, password_hash, role FROM users WHERE email = $1`,
       [email]
     );
 
@@ -88,7 +88,7 @@ router.post("/login", async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { sub: String(user.id), email: user.email },
+      { sub: String(user.id), email: user.email, role: user.role },
       secret,
       { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
     );

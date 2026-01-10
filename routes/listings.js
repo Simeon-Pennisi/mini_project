@@ -116,7 +116,7 @@ router.put(
   requireAuth,
   parseIdParam,
   loadListing,
-  requireOwner,
+  requireAdmin,
   validateListingBody,
   async (req, res, next) => {
     try {
