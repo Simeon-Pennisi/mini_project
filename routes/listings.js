@@ -85,9 +85,9 @@ router.get("/", async (req, res, next) => {
 });
 
 // GET api/admin/ping route for testing admin auth
-router.get("/admin/ping", requireAuth, requireAdmin, (req, res) => {
-  return res.status(200).json({ message: "admin role confirmed" });
-});
+// router.get("/admin/ping", requireAuth, requireAdmin, (req, res) => {
+//   return res.status(200).json({ message: "admin role confirmed" });
+// });
 
 router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
   try {

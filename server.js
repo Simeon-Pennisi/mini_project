@@ -3,6 +3,7 @@ import express from "express";
 import router from "./routes/listings.js";
 import authRouter from "./routes/auth.js";
 import { query } from "./db.js";
+import adminRouter from "./routes/admin.js";
 
 const app = express();
 app.use(express.json());
@@ -11,6 +12,8 @@ app.use(express.json());
 console.log("DATABASE_URL loaded?", Boolean(process.env.DATABASE_URL));
 
 app.use("/api", authRouter);
+app.use("/api", adminRouter);
+app.use("/api/listings", router);
 
 console.log("BOOTED SERVER: auth enabled");
 
