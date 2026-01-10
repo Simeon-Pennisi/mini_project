@@ -61,14 +61,6 @@ function requireOwner(req, res, next) {
   }
 }
 
-// require admin middleware
-export function requireAdmin(req, res, next) {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ error: "Forbidden" });
-  }
-  next(); // let the real route handler run
-}
-
 // validate req.body
 function validateListingBody(req, res, next) {
   const { title, price } = req.body;
