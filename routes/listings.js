@@ -61,7 +61,7 @@ function requireOwner(req, res, next) {
   }
 }
 
-// admin only middleware
+// require admin middleware
 export function requireAdmin(req, res, next) {
   if (req.user.role !== "admin") {
     return res.status(403).json({ error: "Forbidden" });
@@ -90,6 +90,11 @@ router.get("/", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// GET api/admin/ping route for testing admin auth
+router.get("/admin/ping", requireAuth, requireAdmin, (req, res) => {
+  return res.status(200).json({ message: "admin role confirmed" });
 });
 
 router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
