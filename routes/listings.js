@@ -10,32 +10,6 @@ import {
 
 const router = express.Router();
 
-// const listings = [
-//   // the following are mock data
-//   {
-//     id: 1,
-//     title: "Used MacBook Pro",
-//     price: 1200,
-//     condition: "Good",
-//     ownerId: "1",
-
-//   "/:id",
-//   requireAuth,
-//   parseIdParam,
-//   makeLoadListing(listings),
-//   requireAdmin,
-//   validateListingBody,
-//   },
-//   {
-//     // test case for listing with different user id
-//     id: 3,
-//     title: "Power Bank",
-//     price: 15,
-//     condition: "Poor",
-//     ownerId: "2",
-//   },
-// ];
-
 const listings = [
   {
     id: 1,
@@ -68,11 +42,6 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-// GET api/admin/ping route for testing admin auth
-// router.get("/admin/ping", requireAuth, requireAdmin, (req, res) => {
-//   return res.status(200).json({ message: "admin role confirmed" });
-// });
-
 router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
   try {
     const { title, price, condition } = req.body;
@@ -91,33 +60,6 @@ router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
     next(err);
   }
 });
-
-// router.put(
-//   "/:id",
-//   requireAuth,
-//   parseIdParam,
-//   loadListing,
-//   requireAdmin,
-//   validateListingBody,
-//   async (req, res, next) => {
-//     try {
-//       const { title, price, condition } = req.body;
-
-//       const updatedListing = {
-//         ...req.listing,
-//         title,
-//         price,
-//         condition: condition ?? req.listing.condition,
-//       };
-
-//       listings[req.listingIndex] = updatedListing;
-
-//       return res.status(200).json(updatedListing);
-//     } catch (err) {
-//       next(err);
-//     }
-//   }
-// );
 
 // create a new listing
 router.put(
@@ -141,22 +83,6 @@ router.put(
     res.json(updated);
   }
 );
-
-// router.delete(
-//   "/:id",
-//   requireAuth,
-//   parseIdParam,
-//   makeLoadListing(listings),
-//   requireOwner,
-//   async (req, res, next) => {
-//     try {
-//       listings.splice(req.listingIndex, 1);
-//       return res.status(204).send();
-//     } catch (err) {
-//       next(err);
-//     }
-//   }
-// );
 
 // delete a listing
 router.delete(
