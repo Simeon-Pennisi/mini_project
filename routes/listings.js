@@ -7,28 +7,30 @@ import {
   requireOwner,
   validateListingBody,
 } from "./listings.middleware.js";
+// new import statements
+import { getListingById, updateListing } from "./listings.repo.js";
 
 const router = express.Router();
 
-const listings = [
-  {
-    id: 1,
-    title: "Used MacBook Pro",
-    price: 1200,
-    condition: "Good",
-    ownerId: "1",
-  },
-  {
-    id: 2,
-    title: "Mechanical Keyboard",
-    price: 150,
-    condition: "Like New",
-    ownerId: "1",
-  },
-  { id: 3, title: "Power Bank", price: 15, condition: "Poor", ownerId: "2" },
-];
+// const listings = [
+//   {
+//     id: 1,
+//     title: "Used MacBook Pro",
+//     price: 1200,
+//     condition: "Good",
+//     ownerId: "1",
+//   },
+//   {
+//     id: 2,
+//     title: "Mechanical Keyboard",
+//     price: 150,
+//     condition: "Like New",
+//     ownerId: "1",
+//   },
+//   { id: 3, title: "Power Bank", price: 15, condition: "Poor", ownerId: "2" },
+// ];
 
-const loadListing = makeLoadListing(listings);
+// const loadListing = makeLoadListing(listings);
 
 // middleware now imported from ./listings.middleware.js
 
@@ -66,23 +68,55 @@ router.put(
   "/:id",
   requireAuth,
   parseIdParam,
-  loadListing,
-  requireOwner,
   validateListingBody,
-  (req, res) => {
-    const { title, price, condition } = req.body;
+  async (req, res, next) => {
+    try {
+      const id = req.listingId;
+      const userId = req.user.sub;
 
-    const updated = {
-      ...req.listing,
-      title,
-      price,
-      condition: condition ?? req.listing.condition,
-    };
+      const existing = await getListingById(id);
+      if (!existing)
+        return res.status(404).json({ error: "Listing not found" });
+      if (existing.ownerId !== userId)
+        return res.status(403).json({ error: "Forbidden" });
 
-    listings[req.listingIndex] = updated;
-    res.json(updated);
+      const { title, price, condition } = req.body;
+
+      const updated = await updateListing({
+        id,
+        ownerId: userId,
+        title,
+        price,
+        condition,
+      });
+      return res.status(200).json(updated);
+    } catch (err) {
+      next(err);
+    }
   }
 );
+
+// router.put(
+//   "/:id",
+//   requireAuth,
+//   parseIdParam,
+//   loadListing,
+//   requireOwner,
+//   validateListingBody,
+//   (req, res) => {
+//     const { title, price, condition } = req.body;
+
+//     const updated = {
+//       ...req.listing,
+//       title,
+//       price,
+//       condition: condition ?? req.listing.condition,
+//     };
+
+//     listings[req.listingIndex] = updated;
+//     res.json(updated);
+//   }
+// );
 
 // delete a listing
 router.delete(
