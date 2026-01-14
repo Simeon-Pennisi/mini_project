@@ -35,6 +35,7 @@ const router = express.Router();
 // middleware now imported from ./listings.middleware.js
 
 // routes
+// get all listings
 router.get("/", async (req, res, next) => {
   try {
     console.log("listings:", listings);
@@ -44,24 +45,55 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
-  try {
-    const { title, price, condition } = req.body;
-
-    const created = {
-      id: Date.now(),
-      title,
-      price,
-      condition,
-      ownerId: req.user.sub,
-    };
-
-    listings.push(created);
-    return res.status(201).json(created);
-  } catch (err) {
-    next(err);
+// create a listing with next available id
+router.post(
+  "/",
+  requireAuth,
+  parseIdParam,
+  validateListingBody,
+  async (req, res, next) => {
+    try {
+      const id = req.listingId;
+      const userId = req.user.sub;
+      const existing = await getListingById(id);
+      if (existing)
+        return res
+          .status(409)
+          .json({ error: "Listing with this ID already exists" });
+      const { title, price, condition } = req.body;
+      const created = {
+        id,
+        title,
+        price,
+        condition,
+        ownerId: userId,
+      };
+      listings.push(created);
+      return res.status(201).json(created);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
+
+// router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
+//   try {
+//     const { title, price, condition } = req.body;
+
+//     const created = {
+//       id: Date.now(),
+//       title,
+//       price,
+//       condition,
+//       ownerId: req.user.sub,
+//     };
+
+//     listings.push(created);
+//     return res.status(201).json(created);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 // create a new listing
 router.put(
