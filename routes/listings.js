@@ -12,28 +12,6 @@ import { getListingById, updateListing } from "./listings.repo.js";
 
 const router = express.Router();
 
-// const listings = [
-//   {
-//     id: 1,
-//     title: "Used MacBook Pro",
-//     price: 1200,
-//     condition: "Good",
-//     ownerId: "1",
-//   },
-//   {
-//     id: 2,
-//     title: "Mechanical Keyboard",
-//     price: 150,
-//     condition: "Like New",
-//     ownerId: "1",
-//   },
-//   { id: 3, title: "Power Bank", price: 15, condition: "Poor", ownerId: "2" },
-// ];
-
-// const loadListing = makeLoadListing(listings);
-
-// middleware now imported from ./listings.middleware.js
-
 // routes
 // get all listings
 router.get("/", async (req, res, next) => {
@@ -79,25 +57,6 @@ router.post(
   }
 );
 
-// router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
-//   try {
-//     const { title, price, condition } = req.body;
-
-//     const created = {
-//       id: Date.now(),
-//       title,
-//       price,
-//       condition,
-//       ownerId: req.user.sub,
-//     };
-
-//     listings.push(created);
-//     return res.status(201).json(created);
-//   } catch (err) {
-//     next(err);
-//   }
-// });
-
 // create a new listing
 router.put(
   "/:id",
@@ -130,31 +89,6 @@ router.put(
     }
   }
 );
-
-// router.put(
-//   "/:id",
-//   requireAuth,
-//   parseIdParam,
-//   loadListing,
-//   requireOwner,
-//   validateListingBody,
-//   (req, res) => {
-//     const { title, price, condition } = req.body;
-
-//     const updated = {
-//       ...req.listing,
-//       title,
-//       price,
-//       condition: condition ?? req.listing.condition,
-//     };
-
-//     listings[req.listingIndex] = updated;
-//     res.json(updated);
-//   }
-// );
-
-// delete a listing
-//
 
 router.delete(
   "/:id",
