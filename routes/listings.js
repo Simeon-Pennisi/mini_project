@@ -154,15 +154,30 @@ router.put(
 // );
 
 // delete a listing
+//
+
 router.delete(
   "/:id",
   requireAuth,
   parseIdParam,
-  loadListing,
+  makeLoadListing(listings),
   requireOwner,
-  (req, res) => {
-    listings.splice(req.listingIndex, 1);
-    res.status(204).send();
+  async (req, res, next) => {
+    try {
+      const id = req.listingId;
+      const userId = req.user.sub;
+
+      const existing = await getListingById(id);
+      if (!existing)
+        return res.status(404).json({ error: "Listing not found" });
+      if (existing.ownerId !== userId)
+        return res.status(403).json({ error: "Forbidden" });
+
+      await deleteListing(id);
+      return res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
   }
 );
 
