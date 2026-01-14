@@ -38,6 +38,9 @@ const router = express.Router();
 // get all listings
 router.get("/", async (req, res, next) => {
   try {
+    const listings = await getListingById();
+    if (!listings) return res.status(404).json({ error: "Listing not found" });
+
     console.log("listings:", listings);
     res.status(200).json([...listings]);
   } catch (err) {
