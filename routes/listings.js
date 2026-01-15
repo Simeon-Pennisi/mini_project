@@ -31,36 +31,30 @@ router.get("/", async (req, res, next) => {
 });
 
 // create a listing with next available id
-router.post(
-  "/",
-  requireAuth,
-  parseIdParam,
-  validateListingBody,
-  async (req, res, next) => {
-    try {
-      const id = req.listingId;
-      // const userId = req.user.sub;
-      const userId = Number(req.user.sub);
-      const existing = await getListingById(id);
-      if (existing)
-        return res
-          .status(409)
-          .json({ error: "Listing with this ID already exists" });
-      const { title, price, condition } = req.body;
-      const created = {
-        id,
-        title,
-        price,
-        condition,
-        ownerId: userId,
-      };
-      listings.push(created);
-      return res.status(201).json(created);
-    } catch (err) {
-      next(err);
-    }
+router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
+  try {
+    const id = req.listingId;
+    // const userId = req.user.sub;
+    const userId = Number(req.user.sub);
+    const existing = await getListingById(id);
+    if (existing)
+      return res
+        .status(409)
+        .json({ error: "Listing with this ID already exists" });
+    const { title, price, condition } = req.body;
+    const created = {
+      id,
+      title,
+      price,
+      condition,
+      ownerId: userId,
+    };
+    listings.push(created);
+    return res.status(201).json(created);
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 // create a new listing
 router.put(
