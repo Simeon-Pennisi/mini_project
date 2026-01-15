@@ -12,6 +12,7 @@ import {
   getAllListings,
   getListingById,
   updateListing,
+  deleteListing,
 } from "./listings.repo.js";
 
 const router = express.Router();
@@ -60,6 +61,7 @@ router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
 router.put(
   "/:id",
   requireAuth,
+  requireOwner,
   parseIdParam,
   validateListingBody,
   async (req, res, next) => {
@@ -93,9 +95,11 @@ router.put(
 router.delete(
   "/:id",
   requireAuth,
-  parseIdParam,
-  makeLoadListing(),
   requireOwner,
+  parseIdParam,
+  getListingById,
+  // makeLoadListing(),
+  // requireOwner,
   async (req, res, next) => {
     try {
       const id = req.listingId;
@@ -108,8 +112,9 @@ router.delete(
       if (existing.ownerId !== userId)
         return res.status(403).json({ error: "Forbidden" });
 
-      await deleteListing(id);
-      return res.status(204).send();
+      const deleted = await deleteListing(id);
+      // return res.status(204).send();
+      return res.status(204).json(deleted);
     } catch (err) {
       next(err);
     }
@@ -117,3 +122,4 @@ router.delete(
 );
 
 export default router;
+// Note: deleteListing function should be imported from listings.repo.js
