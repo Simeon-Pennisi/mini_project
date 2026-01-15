@@ -11,6 +11,7 @@ import {
 import {
   getAllListings,
   getListingById,
+  createListing,
   updateListing,
   deleteListing,
 } from "./listings.repo.js";
@@ -22,7 +23,7 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const listings = await getAllListings();
-    if (!listings) return res.status(404).json({ error: "Listing not found" });
+    if (!listings) return res.status(404).json({ error: "Listings not found" });
 
     console.log("listings:", listings);
     res.status(200).json([...listings]);
@@ -34,23 +35,16 @@ router.get("/", async (req, res, next) => {
 // create a listing with next available id
 router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
   try {
-    const id = req.listingId;
-    // const userId = req.user.sub;
-    const userId = Number(req.user.sub);
-    const existing = await getListingById(id);
-    if (existing)
-      return res
-        .status(409)
-        .json({ error: "Listing with this ID already exists" });
+    const ownerId = Number(req.user.sub);
     const { title, price, condition } = req.body;
-    const created = {
-      id,
+
+    const created = await createListing({
       title,
       price,
       condition,
-      ownerId: userId,
-    };
-    listings.push(created);
+      ownerId,
+    });
+
     return res.status(201).json(created);
   } catch (err) {
     next(err);
@@ -61,30 +55,36 @@ router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
 router.put(
   "/:id",
   requireAuth,
-  requireOwner,
   parseIdParam,
   validateListingBody,
   async (req, res, next) => {
     try {
       const id = req.listingId;
       // const userId = req.user.sub;
-      const userId = Number(req.user.sub);
+      const ownerId = Number(req.user.sub);
 
       const existing = await getListingById(id);
-      if (!existing)
+      if (!existing) {
         return res.status(404).json({ error: "Listing not found" });
-      if (existing.ownerId !== userId)
+      }
+      if (Number(existing.ownerId) !== ownerId) {
         return res.status(403).json({ error: "Forbidden" });
+      }
 
       const { title, price, condition } = req.body;
 
       const updated = await updateListing({
         id,
-        ownerId: userId,
+        ownerId,
         title,
         price,
         condition,
       });
+
+      if (!updated) {
+        return res.status(500).json({ error: "Update failed" });
+      }
+
       return res.status(200).json(updated);
     } catch (err) {
       next(err);
@@ -92,34 +92,30 @@ router.put(
   }
 );
 
-router.delete(
-  "/:id",
-  requireAuth,
-  requireOwner,
-  parseIdParam,
-  getListingById,
-  // makeLoadListing(),
-  // requireOwner,
-  async (req, res, next) => {
-    try {
-      const id = req.listingId;
-      // const userId = req.user.sub;
-      const userId = Number(req.user.sub);
+router.delete("/:id", requireAuth, parseIdParam, async (req, res, next) => {
+  try {
+    const id = req.listingId;
+    const ownerId = Number(req.user.sub);
 
-      const existing = await getListingById(id);
-      if (!existing)
-        return res.status(404).json({ error: "Listing not found" });
-      if (existing.ownerId !== userId)
-        return res.status(403).json({ error: "Forbidden" });
-
-      const deleted = await deleteListing(id);
-      // return res.status(204).send();
-      return res.status(204).json(deleted);
-    } catch (err) {
-      next(err);
+    const existing = await getListingById(id);
+    if (!existing) {
+      return res.status(404).json({ error: "Listing not found" });
     }
+    if (Number(existing.ownerId) !== ownerId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const ok = await deleteListing({ id, ownerId });
+
+    if (!ok) {
+      return res.status(500).json({ error: "Delete failed" });
+    }
+
+    return res.status(204).send();
+  } catch (err) {
+    next(err);
   }
-);
+});
 
 export default router;
 // Note: deleteListing function should be imported from listings.repo.js
