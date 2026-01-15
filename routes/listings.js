@@ -35,7 +35,8 @@ router.post(
   async (req, res, next) => {
     try {
       const id = req.listingId;
-      const userId = req.user.sub;
+      // const userId = req.user.sub;
+      const userId = Number(req.user.sub);
       const existing = await getListingById(id);
       if (existing)
         return res
@@ -66,7 +67,8 @@ router.put(
   async (req, res, next) => {
     try {
       const id = req.listingId;
-      const userId = req.user.sub;
+      // const userId = req.user.sub;
+      const userId = Number(req.user.sub);
 
       const existing = await getListingById(id);
       if (!existing)
@@ -94,12 +96,13 @@ router.delete(
   "/:id",
   requireAuth,
   parseIdParam,
-  makeLoadListing(listings),
+  makeLoadListing(),
   requireOwner,
   async (req, res, next) => {
     try {
       const id = req.listingId;
-      const userId = req.user.sub;
+      // const userId = req.user.sub;
+      const userId = Number(req.user.sub);
 
       const existing = await getListingById(id);
       if (!existing)

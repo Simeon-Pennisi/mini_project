@@ -1,3 +1,4 @@
+// listings.repo.js
 import { query } from "../db.js";
 
 export async function getAllListings() {
