@@ -8,7 +8,11 @@ import {
   validateListingBody,
 } from "./listings.middleware.js";
 // new import statements
-import { getListingById, updateListing } from "./listings.repo.js";
+import {
+  getAllListings,
+  getListingById,
+  updateListing,
+} from "./listings.repo.js";
 
 const router = express.Router();
 
@@ -16,7 +20,7 @@ const router = express.Router();
 // get all listings
 router.get("/", async (req, res, next) => {
   try {
-    const listings = await getListingById();
+    const listings = await getAllListings();
     if (!listings) return res.status(404).json({ error: "Listing not found" });
 
     console.log("listings:", listings);
