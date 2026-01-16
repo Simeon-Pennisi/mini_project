@@ -1,12 +1,8 @@
+// routes/listings.js
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { requireAdmin } from "../middleware/admin.js";
-import {
-  parseIdParam,
-  makeLoadListing,
-  requireOwner,
-  validateListingBody,
-} from "./listings.middleware.js";
+import { parseIdParam, validateListingBody } from "./listings.middleware.js";
+
 // new import statements
 import {
   getAllListings,
@@ -23,7 +19,7 @@ const router = express.Router();
 router.get("/", async (req, res, next) => {
   try {
     const listings = await getAllListings();
-    if (!listings) return res.status(404).json({ error: "Listings not found" });
+    // if (!listings) return res.status(404).json({ error: "No listings found" });
 
     console.log("listings:", listings);
     res.status(200).json([...listings]);
@@ -118,4 +114,3 @@ router.delete("/:id", requireAuth, parseIdParam, async (req, res, next) => {
 });
 
 export default router;
-// Note: deleteListing function should be imported from listings.repo.js
