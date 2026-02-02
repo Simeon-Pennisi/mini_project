@@ -41,8 +41,9 @@ export async function patchListing({ id, ownerId, fields }) {
          updated_at = NOW()
      WHERE id = $4 AND owner_id = $5
      RETURNING id, title, price, condition, owner_id AS "ownerId"`,
-    [title, price, condition ?? null, id, ownerId],
+    [fields ?? null, id, ownerId],
   );
+  return result.rows[0] ?? null;
 }
 
 // Returns updated row if updated, null if no row matched (either not found OR not owner)

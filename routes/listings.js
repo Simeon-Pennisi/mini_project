@@ -13,6 +13,7 @@ import {
   getListingById,
   createListing,
   updateListing,
+  patchListing,
   deleteListing,
 } from "./listings.repo.js";
 
@@ -87,6 +88,45 @@ router.put(
       }
 
       return res.status(200).json(updated);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+// update an existing listing
+router.patch(
+  "/:id",
+  requireAuth,
+  parseIdParam,
+  validateListingPatchBody,
+  async (req, res, next) => {
+    try {
+      const id = req.listingId;
+      // const userId = req.user.sub;
+      const ownerId = Number(req.user.sub);
+
+      const existing = await getListingById(id);
+      if (!existing) {
+        return res.status(404).json({ error: "Listing not found" });
+      }
+      if (Number(existing.ownerId) !== ownerId) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      const { title, price, condition } = req.body;
+
+      const patched = await patchListing({
+        id,
+        ownerId,
+        fields,
+      });
+
+      if (!patched) {
+        return res.status(500).json({ error: "Patch failed" });
+      }
+
+      return res.status(200).json(patched);
     } catch (err) {
       next(err);
     }
