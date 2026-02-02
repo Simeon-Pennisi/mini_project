@@ -30,9 +30,9 @@ export async function createListing({ title, price, condition, ownerId }) {
   return result.rows[0];
 }
 
-export async function patchListing({ id, ownerId, fields }) {
+export async function patchListing({ id, ownerId, title, price, condition }) {
   // fields is an object containing only validated keys
-  const fields = ["title", "price", "condition"];
+  // const fields = ["title", "price", "condition"];
   const result = await query(
     `UPDATE listings
      SET title = COALESCE ($1, title),
@@ -41,7 +41,7 @@ export async function patchListing({ id, ownerId, fields }) {
          updated_at = NOW()
      WHERE id = $4 AND owner_id = $5
      RETURNING id, title, price, condition, owner_id AS "ownerId"`,
-    [fields ?? null, id, ownerId],
+    [title, price, condition ?? null, id, ownerId],
   );
   return result.rows[0] ?? null;
 }

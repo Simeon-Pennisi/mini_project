@@ -119,7 +119,9 @@ router.patch(
       const patched = await patchListing({
         id,
         ownerId,
-        fields,
+        title,
+        price,
+        condition,
       });
 
       if (!patched) {
