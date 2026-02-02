@@ -1,7 +1,11 @@
 // routes/listings.js
 import express from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { parseIdParam, validateListingBody } from "./listings.middleware.js";
+import {
+  parseIdParam,
+  validateListingBody,
+  validateListingPatchBody,
+} from "./listings.middleware.js";
 
 // new import statements
 import {
