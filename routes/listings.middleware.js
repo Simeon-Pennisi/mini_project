@@ -45,3 +45,28 @@ export function validateListingBody(req, res, next) {
   }
   next();
 }
+
+export function validateListingPatchBody(req, res, next) {
+  const allowed = ["title", "price", "condition"];
+  const keys = Object.keys(req.body);
+
+  if (keys.length === 0) {
+    return res.status(400).json({ error: "No fields to update" });
+  }
+
+  for (const key of keys) {
+    if (!allowed.includes(key)) {
+      return res.status(400).json({ error: "Invalid field" });
+    }
+  }
+
+  if ("title" in req.body && typeof req.body.title !== "string") {
+    return res.status(400).json({ error: "Invalid title" });
+  }
+
+  if ("price" in req.body && typeof req.body.price !== "number") {
+    return res.status(400).json({ error: "Invalid price" });
+  }
+
+  next();
+}

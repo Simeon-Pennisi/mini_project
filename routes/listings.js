@@ -15,11 +15,12 @@ import {
 const router = express.Router();
 
 // routes
+
 // get all listings
 router.get("/", async (req, res, next) => {
   try {
     const listings = await getAllListings();
-    // if (!listings) return res.status(404).json({ error: "No listings found" });
+    if (!listings) return res.status(200).json({ error: "No listings found" });
 
     console.log("listings:", listings);
     res.status(200).json([...listings]);
@@ -85,7 +86,7 @@ router.put(
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 router.delete("/:id", requireAuth, parseIdParam, async (req, res, next) => {
