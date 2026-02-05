@@ -1,7 +1,9 @@
 // routes/listings.js
 import express from "express";
-import { requireAuth } from "../middleware/auth.js";
+// import { requireAuth } from "../middleware/auth.js";
 import {
+  requireAuth,
+  requireOwner,
   parseIdParam,
   validateListingBody,
   validateListingPatchBody,
@@ -57,6 +59,7 @@ router.post("/", requireAuth, validateListingBody, async (req, res, next) => {
 router.put(
   "/:id",
   requireAuth,
+  requireOwner,
   parseIdParam,
   validateListingBody,
   async (req, res, next) => {
@@ -98,6 +101,7 @@ router.put(
 router.patch(
   "/:id",
   requireAuth,
+  requireOwner,
   parseIdParam,
   validateListingPatchBody,
   async (req, res, next) => {
